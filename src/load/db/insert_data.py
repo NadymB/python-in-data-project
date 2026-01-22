@@ -3,10 +3,8 @@ from config.paths import PROCESSED_DATA_DIR
 
 def insert_data(db_connection, csv_path ,table_name, columns):
     df = pd.read_csv(csv_path)
-    print(f"{df}")
 
     if df.empty:
-        print(f"[SKIP] {table_name} - no data")
         return 
 
     # Convert list of dicts → list of tuples in correct column order
@@ -14,7 +12,6 @@ def insert_data(db_connection, csv_path ,table_name, columns):
         tuple(None if pd.isna(v) else v for v in row)
         for row in df[columns].to_numpy()
     ]
-    print(f"values: {values[:2]}")
 
     # Build SQL query string dynamically
     col_str = ", ".join(columns)

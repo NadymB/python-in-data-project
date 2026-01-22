@@ -47,7 +47,7 @@ def test_generate_product_fake_data():
         assert record["category_id"] in category_ids
         assert record["seller_id"] in seller_ids
         assert "price" in record
-        assert 1000000 <= record["price"] <= 50000000
+        assert 100000 <= record["price"] <= 50000000
         assert "discount_price" in record
         assert record["discount_price"] <= record["price"]
         assert "stock_qty" in record

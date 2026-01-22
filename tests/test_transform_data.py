@@ -29,13 +29,14 @@ def test_category_parent_fk_logic():
 
     category_ids = set(range(1, len(df) + 1))
 
-    invalid_parent = df[
+    parent_ids = (
         df["parent_category_id"]
         .dropna()
         .astype(int)
-    ]
+    )
 
-    assert invalid_parent.empty
+    assert parent_ids.isin(category_ids).all()
+
 
 def test_brand_schema():
     df = pd.read_csv(PROCESSED_DATA_DIR / "brands_cleaned.csv")

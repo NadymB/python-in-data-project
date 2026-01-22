@@ -22,7 +22,3 @@ def load_config():
         "password": os.getenv("DB_PASSWORD"),
     }
     
-
-if __name__ == '__main__':
-    config = load_config()
-    print(config)
