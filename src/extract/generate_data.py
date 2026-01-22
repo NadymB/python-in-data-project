@@ -4,7 +4,7 @@ from src.utils.format_date import format_date
 from src.utils.constants import SELLER_TYPE, PROMOTION_TYPE, DISCOUNT_TYPE
 import random
 
-fake = Faker()
+fake = Faker("vi_VN")
 
 def generate_brand_fake_data(num_records):
     brand_data = []
@@ -45,7 +45,7 @@ def generate_seller_fake_data(num_records):
             "join_date": fake.date_between(start_date='-3y', end_date='today'),
             "seller_type": random.choice(SELLER_TYPE),
             "rating": round(random.uniform(3, 5), 1),
-            "country": fake.country(),
+            "country": "Vietnam",
             "created_at": format_date(fake.date_time_this_year())
         }
         seller_data.append(seller)
