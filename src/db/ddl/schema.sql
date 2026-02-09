@@ -71,9 +71,11 @@ CREATE TABLE order_item (
     order_item_id SERIAL PRIMARY KEY,
     order_id INT REFERENCES "order"(order_id),
     product_id INT REFERENCES product(product_id),
+    order_date DATE,
     quantity INT CHECK(quantity > 0),
     unit_price DECIMAL(12, 2) CHECK(unit_price >= 0),
-    subtotal DECIMAL(12, 2) CHECK(subtotal >= 0)
+    subtotal DECIMAL(12, 2) CHECK(subtotal >= 0),
+    created_at DATE
 );
 
 -- Table: Promotion

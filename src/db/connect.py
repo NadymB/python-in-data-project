@@ -1,5 +1,4 @@
 import psycopg2
-from src.load.db.config import load_config
 
 def connect(config):
     try:

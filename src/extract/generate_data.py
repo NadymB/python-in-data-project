@@ -1,8 +1,11 @@
 from faker import Faker
 from datetime import timedelta
+
 from src.utils.format_date import format_date
 from src.utils.constants import SELLER_TYPE, PROMOTION_TYPE, DISCOUNT_TYPE
+from datetime import datetime
 import random
+import pandas as pd
 
 fake = Faker("vi_VN")
 
@@ -104,3 +107,73 @@ def generate_promotion_product_fake_data(num_records, promotion_ids, product_ids
         }
         promotion_product_data.append(promotion_product)
     return promotion_product_data
+
+def random_status():
+    r = random.random()
+    if r < 0.8:
+        return random.choice(["PAID", "DELIVERED"])
+    elif r < 0.9:
+        return random.choice(["CANCELLED", "RETURNED"])
+    else:
+        return random.choice(["PLACED", "SHIPPED"])
+
+def generate_orders_and_order_items_fake_data(num_orders, seller_products):
+    orders = []
+    order_items = []
+
+    order_id = 1
+    for _ in range(num_orders):
+
+        seller_id = random.choice(list(seller_products.keys()))
+        available_products = seller_products[seller_id]
+
+        if len(available_products) < 2:
+            continue
+
+        k = min(len(available_products), random.randint(2, 4))
+        # Faking 2-4 products per order
+        products = random.sample(available_products, k=k)
+
+        # Faker status
+        status = random_status()
+
+        # Faker order date
+        start_dt = datetime(2025, 8, 1)
+        end_dt   = datetime(2025, 10, 31)
+
+        order_date = fake.date_between(
+            start_date=start_dt,
+            end_date=end_dt
+        )
+
+        total_amount = 0
+
+        for p in products:
+
+            qty = random.randint(1, 5)
+            unit_price = float(p["discount_price"])
+            subtotal = round(qty * unit_price, 2)
+
+            order_items.append({
+                "order_id": order_id,
+                "product_id": p["product_id"],
+                "order_date": order_date,
+                "quantity": qty,
+                "unit_price": unit_price,
+                "subtotal": subtotal,
+                "created_at": order_date
+            })
+
+            total_amount += subtotal
+
+        orders.append({
+            "order_bk": order_id,
+            "order_date": order_date,
+            "seller_id": seller_id,
+            "status": status,
+            "total_amount": round(total_amount, 2),
+            "created_at": order_date
+        })
+        order_id += 1
+
+    return orders, order_items

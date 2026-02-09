@@ -1,5 +1,22 @@
 from src.extract.generate_data import generate_brand_fake_data, generate_category_product_fake_data , generate_seller_fake_data, generate_product_fake_data, generate_promotion_fake_data, generate_promotion_product_fake_data
 from src.utils.constants import SELLER_TYPE, PROMOTION_TYPE, DISCOUNT_TYPE
+from src.extract.generate_data import generate_orders_and_order_items_fake_data
+from datetime import datetime
+from src.utils.constants import ORDER_STATUS
+import pandas as pd 
+
+products_dump = {
+    1: [
+        {"product_id":1, "discount_price":100},
+        {"product_id":2, "discount_price":200},
+        {"product_id":3, "discount_price":300},
+    ],
+    2: [
+        {"product_id":4, "discount_price":400},
+        {"product_id":5, "discount_price":500},
+        {"product_id":6, "discount_price":600},
+    ]
+}
 
 def test_generate_brand_fake_data():
     data = generate_brand_fake_data(5)
@@ -85,6 +102,68 @@ def test_generate_promotion_product_fake_data():
         assert record["product_id"] in product_ids
         assert "created_at" in record
 
+def test_generate_orders_and_order_items_fake_data():
+    # Test right length orders and order items
+    orders, order_items = generate_orders_and_order_items_fake_data(100, products_dump)
+    assert len(orders) == 100
+    assert len(order_items) >= 200
+
+    # Test each order has 2 - 4 items 
+    order_count = {}
+
+    for it in order_items:
+        order_count.setdefault(it["order_id"], 0)
+        order_count[it["order_id"]] += 1
+
+    for cnt in order_count.values():
+        assert 2 <= cnt <= 4
+
+    # Test total_amount = sum(subtotal)
+    subtotal_map = {}
+
+    for it in order_items:
+        subtotal_map.setdefault(it["order_id"], 0)
+        subtotal_map[it["order_id"]] += it["subtotal"]
+
+    for o in orders: 
+        assert round(o["total_amount"], 2) == round(subtotal_map[o["order_bk"]], 2)
+    
+    # Test each product must belong to same seller_id as order
+    product_seller = {}
+
+    for seller_id, products in products_dump.items():
+        for p in products:
+            product_seller[p["product_id"]] = seller_id
+
+    order_seller = {
+        o["order_bk"]: o["seller_id"] for o in orders 
+    }
+
+    for it in order_items:
+        assert product_seller[it["product_id"]] == order_seller[it["order_id"]]
+
+    # Test order date ranges:
+    start = datetime(2025, 8, 1).date()
+    end = datetime(2025, 10, 31).date()
+    
+    for o in orders:
+        order_date = o["order_date"]
+        if isinstance(order_date, datetime):
+            order_date = order_date.date()
+
+        assert start <= order_date <= end
+
+    for it in order_items:
+        order_date = it["order_date"]
+        if isinstance(order_date, datetime):
+            order_date = order_date.date()
+
+        assert start <= order_date <= end
+
+    # Test status validity
+    for o in orders:
+        assert o["status"] in list(ORDER_STATUS.values())
+
 if __name__ == "__main__":
     test_generate_brand_fake_data()
     test_generate_category_product_fake_data()
@@ -92,4 +171,5 @@ if __name__ == "__main__":
     test_generate_product_fake_data()
     test_generate_promotion_fake_data()
     test_generate_promotion_product_fake_data()
+    test_generate_orders_and_order_items_fake_data()
     print("All tests passed!")

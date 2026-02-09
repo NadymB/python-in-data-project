@@ -1,6 +1,6 @@
 import pandas as pd
 from config.paths import RAW_DATA_DIR, PROCESSED_DATA_DIR
-from src.utils.constants import PROMOTION_TYPE, SELLER_TYPE
+from src.utils.constants import PROMOTION_TYPE, SELLER_TYPE, ORDER_STATUS
 from src.load.file.saved_csv import save_cleaned
 
 def clean_brand_data():
@@ -196,6 +196,90 @@ def clean_promotion_product_data():
 
     # Remove duplicates
     df = df.drop_duplicates(['promotion_id', 'product_id'])
+
+    # Save the cleaned data
+    save_cleaned(df, output_file)
+
+def clean_orders_data():
+    input_file = RAW_DATA_DIR / "orders.csv"
+    output_file = PROCESSED_DATA_DIR / "orders_cleaned.csv"
+
+    df = pd.read_csv(input_file)
+
+    # Type casting
+    df["order_bk"] = df["order_bk"].astype(int)
+    df["seller_id"] = df["seller_id"].astype(int)
+
+    df["total_amount"] = pd.to_numeric(df["total_amount"], errors="coerce")
+
+    df["order_date"] = pd.to_datetime(df["order_date"], errors="coerce")
+
+    # Normalize status
+    df["status"] = (
+        df["status"]
+        .astype(str)
+        .str.strip()
+    )
+
+    # Status validation
+    df = df[df["status"].isin(list(ORDER_STATUS.values()))]
+
+    # Remove invalid rows
+    df = df[df["total_amount"] > 0]
+    df = df.dropna(subset=["order_date"])
+
+    # Date order range filter
+    df = df[(df["order_date"] >= "2025-08-01") & (df["order_date"] <= "2025-10-31")]
+
+    df['order_date'] = pd.to_datetime(df['order_date'], errors='coerce').dt.strftime('%Y-%m-%d')    
+
+    # Created date range filter
+    df = df[(df["created_at"] >= "2025-08-01") & (df["created_at"] <= "2025-10-31")]
+
+    df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce').dt.strftime('%Y-%m-%d')    
+
+    # Remove duplicates
+    df = df.drop_duplicates(subset=["order_bk"])
+
+    # Save the cleaned data
+    save_cleaned(df, output_file)
+
+
+def clean_order_items_data():
+    input_file = RAW_DATA_DIR / "order_items.csv"
+    output_file = PROCESSED_DATA_DIR / "order_items_cleaned.csv"
+
+    df = pd.read_csv(input_file)
+
+    # Type casting
+    df["order_id"] = df["order_id"].astype(int)
+    df["product_id"] = df["product_id"].astype(int)
+
+    df["quantity"] = pd.to_numeric(df["quantity"], errors="coerce")
+    df["unit_price"] = pd.to_numeric(df["unit_price"], errors="coerce")
+
+    # Remove unit price and quantity invalid 
+    df = df[
+        (df["unit_price"] > 0) & 
+        (df["quantity"] > 0)
+    ]
+
+    # Calculate subtotal
+    df["subtotal"] = (df["quantity"] * df["unit_price"]).round(2)
+
+    # Remove invalid dates
+    df = df.dropna(subset=["order_date"])
+
+    # Date order range filter
+
+    df = df[(df["order_date"] >= "2025-08-01") & (df["order_date"] <= "2025-10-31")]
+
+    df['order_date'] = pd.to_datetime(df['order_date'], errors='coerce').dt.strftime('%Y-%m-%d')    
+
+    # Created date range filter
+    df = df[(df["created_at"] >= "2025-08-01") & (df["created_at"] <= "2025-10-31")]
+
+    df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce').dt.strftime('%Y-%m-%d')    
 
     # Save the cleaned data
     save_cleaned(df, output_file)

@@ -1,3 +1,5 @@
+from datetime import date
+
 SELLER_TYPE = ['Official', 'Marketplace']
 PROMOTION_TYPE = ['product', 'category', 'seller', 'flash_sale', 'other']
 DISCOUNT_TYPE = {
@@ -11,5 +13,10 @@ ORDER_STATUS = {
     3: 'DELIVERED', 
     4: 'CANCELLED', 
     5: 'RETURNED'
+}
+
+ACTIVE_PRODUCTS_DATE = {
+    "from": date(2025, 8, 1),
+    "to": date(2025, 10, 31)
 }
 

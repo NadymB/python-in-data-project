@@ -1,8 +1,13 @@
 import pandas as pd
 from config.paths import PROCESSED_DATA_DIR
+from psycopg2.extras import execute_values
 
 def insert_data(db_connection, csv_path ,table_name, columns):
+    # Read data from CSV
     df = pd.read_csv(csv_path)
+
+    if table_name == "order":
+        df = df.drop(columns=["order_bk"])
 
     if df.empty:
         return 
@@ -16,7 +21,7 @@ def insert_data(db_connection, csv_path ,table_name, columns):
     # Build SQL query string dynamically
     col_str = ", ".join(columns)
     placeholders = ", ".join(["%s"] * len(columns))
-    insert_query = f"INSERT INTO {table_name} ({col_str}) VALUES ({placeholders})"
+    insert_query = f'''INSERT INTO "{table_name}" ({col_str}) VALUES ({placeholders})'''
 
     try:
         with db_connection.cursor() as cursor:
@@ -29,7 +34,7 @@ def insert_data(db_connection, csv_path ,table_name, columns):
         raise
 
 
-def load_all_tables(conn):
+def load_dimension_tables(conn):
 
     insert_data(
         conn,
@@ -81,5 +86,28 @@ def load_all_tables(conn):
         ["promotion_id", "product_id", "created_at"]
     )
 
+def load_fact_tables(db_connection):
+    # columns for orders and order_items
+    order_columns = [
+        "order_date", "seller_id",
+        "status", "total_amount", "created_at"
+    ]
+    order_item_columns = [ 
+        "order_id", "order_date", "product_id",
+        "quantity", "unit_price",
+        "subtotal", "created_at"
+    ]
+    
+    insert_data(
+        db_connection,
+        PROCESSED_DATA_DIR / "orders_cleaned.csv",
+        "order",
+        order_columns
+    )
 
-
+    insert_data(
+        db_connection,
+        PROCESSED_DATA_DIR / "order_items_cleaned.csv",
+        "order_item",
+        order_item_columns
+    )

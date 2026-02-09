@@ -4,7 +4,7 @@ from src.extract.generate_data import (
     generate_seller_fake_data,
     generate_product_fake_data,
     generate_promotion_fake_data,
-    generate_promotion_product_fake_data
+    generate_promotion_product_fake_data,
 )
 from config.paths import RAW_DATA_DIR
 from src.load.file.write_csv import write_csv

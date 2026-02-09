@@ -81,3 +81,51 @@ def test_promotion_product_ids():
     assert df["promotion_id"].apply(lambda x: x % 1 == 0).all()
     assert df["product_id"].apply(lambda x: x % 1 == 0).all()
 
+def test_orders():
+    df = pd.read_csv(PROCESSED_DATA_DIR / "orders_cleaned.csv")
+
+    # id must be integer-like
+    assert (df["order_bk"] % 1 == 0).all()
+    assert (df["seller_id"] % 1 == 0).all()
+
+    # total_amount > 0
+    assert (df["total_amount"] > 0).all()
+
+    # status not null
+    assert df["status"].notna().all()
+
+    # date format valid
+    df["order_date"] = pd.to_datetime(df["order_date"], errors="coerce")
+    assert df["order_date"].notna().all()
+
+    # date range check
+    assert (df["order_date"] >= "2025-08-01").all()
+    assert (df["order_date"] <= "2025-10-31").all()
+
+    # no duplicate order_bk
+    assert df["order_bk"].is_unique
+
+def test_order_items():
+    df = pd.read_csv(PROCESSED_DATA_DIR / "order_items_cleaned.csv")
+
+    # id must be integer-like
+    assert (df["order_id"] % 1 == 0).all()
+    assert (df["product_id"] % 1 == 0).all()
+
+    # quantity > 0
+    assert (df["quantity"] > 0).all()
+
+    # price > 0
+    assert (df["unit_price"] > 0).all()
+
+    # subtotal correct
+    calc = (df["quantity"] * df["unit_price"]).round(2)
+    assert (calc == df["subtotal"].round(2)).all()
+
+    # date valid
+    df["order_date"] = pd.to_datetime(df["order_date"], errors="coerce")
+    assert df["order_date"].notna().all()
+
+    # date range
+    assert (df["order_date"] >= "2025-08-01").all()
+    assert (df["order_date"] <= "2025-10-31").all()
