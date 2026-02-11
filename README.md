@@ -8,6 +8,7 @@ This project implements a full ETL (Extract – Transform – Load) pipeline for
 - Transforms & cleans the data based on database schema
 - Loads the cleaned data into a PostgreSQL database
 - Includes data quality tests to ensure reliability before inserting into the database
+- SQL analytics and reporting using indexing & partition for query performance optimization
 
 ## ERD 
 <p align="center">
@@ -37,7 +38,13 @@ This project implements a full ETL (Extract – Transform – Load) pipeline for
   - Validate ranges (price, rating, level, dates)
 3. Load:
 - Load cleaned data into PostgreSQL
-
+4. Analytics & Reporting
+  SQL analytical reports are implemented using window function. Available function: 
+  - Monthly Revenue Report: Aggregate total orders, quantity sold, and revenue by month within a given date range.
+  - Daily Revenue Report: Aggregate total orders, quantity sold, and revenue by date with optional product list.
+  - Seller Performance Report: Compare sellers by total revenue and quantity sold.
+  - Top Products per Brand: Top N products per brand by quantity sold.
+  - Orders Status Summary: Summarize order count and revenue by status.
 ## Environment variable:
 ```
 DB_HOST=your_host
@@ -55,3 +62,4 @@ poetry shell
 
 ## Conclusion 
 This project delivers a reliable ETL pipeline for an E-Commerce system, from data generation and transformation to loading into PostgreSQL.
+
